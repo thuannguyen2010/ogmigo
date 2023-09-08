@@ -146,3 +146,44 @@ func Test_getInit(t *testing.T) {
 		}
 	})
 }
+
+func Test_getInitV6(t *testing.T) {
+	ctx := context.Background()
+	p1 := chainsync.PointStruct{
+		BlockNo: 123,
+		Hash:    "hash",
+		Slot:    456,
+	}
+	p2 := chainsync.PointStruct{
+		BlockNo: 321,
+		Hash:    "hash",
+		Slot:    654,
+	}
+
+	t.Run("from store", func(t *testing.T) {
+		store := mockStore{
+			pp: chainsync.Points{p1.Point()},
+		}
+		points, err := getInitV6(ctx, store, p2.Point())
+		if err != nil {
+			t.Fatalf("got %v; want nil", err)
+		}
+
+		want := `{"id":"findIntersect","jsonrpc":"2.0","method":"findIntersection","params":{"points":[{"id":"hash","slot":456}]}}`
+		if got := string(points); got != want {
+			t.Fatalf("got %v; want %v", got, want)
+		}
+	})
+
+	t.Run("from points", func(t *testing.T) {
+		store := mockStore{}
+		points, err := getInitV6(ctx, store, p1.Point())
+		if err != nil {
+			t.Fatalf("got %v; want nil", err)
+		}
+		want := `{"id":"findIntersect","jsonrpc":"2.0","method":"findIntersection","params":{"points":[{"id":"hash","slot":456}]}}`
+		if got := string(points); got != want {
+			t.Fatalf("got %v; want %v", got, want)
+		}
+	})
+}
