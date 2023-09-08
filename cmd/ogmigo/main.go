@@ -16,8 +16,10 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"github.com/thuannguyen2010/ogmigo"
+	"github.com/thuannguyen2010/ogmigo/ouroboros/chainsync"
 	"github.com/urfave/cli/v2"
 	"log"
 	"os"
@@ -65,16 +67,64 @@ func main() {
 
 func action(_ *cli.Context) error {
 	client := ogmigo.New(
-		ogmigo.WithEndpoint("ws://localhost:1337"),
+		ogmigo.WithEndpoint("ws://172.0.0.1:1337"),
 		ogmigo.WithLogger(ogmigo.DefaultLogger),
 	)
 
-	ctx := context.Background()
-	redeemer, err := client.EvaluateTx(ctx, "")
-	if err != nil {
-		panic(err)
+	var (
+		ctx    = context.Background()
+		points chainsync.Points
+	)
+	points = []chainsync.Point{
+		chainsync.PointStruct{
+			BlockNo: 1009189,
+			Hash:    "b95423b8778536cf9a53e8855cef2bd8702f79ffa3c918b8857437cfb238474d",
+			Slot:    23003752,
+		}.Point(),
 	}
-	fmt.Println(redeemer)
+	//useV6 := false
+	useV6 := true
+	var callback ogmigo.ChainSyncFunc = func(ctx context.Context, data []byte) error {
+		var response chainsync.Response
+		if useV6 {
+			var resV6 chainsync.ResponseV6
+			if err := json.Unmarshal(data, &resV6); err != nil {
+				return err
+			}
+			response = resV6.ConvertToV5()
+		} else {
+			if err := json.Unmarshal(data, &response); err != nil {
+				return err
+			}
+		}
+
+		if response.Result == nil {
+			return nil
+		}
+		if response.Result.RollForward != nil {
+			ps := response.Result.RollForward.Block.PointStruct()
+			fmt.Println("blockNo", ps.BlockNo, "hash", ps.Hash, "slot", ps.Slot)
+		}
+		if response.Result.RollBackward != nil {
+			return nil
+		}
+
+		//ps := response.Result.RollForward.Block.PointStruct()
+		//fmt.Printf("slot=%v hash=%v block=%v\n", ps.Slot, ps.Hash, ps.BlockNo)
+
+		return nil
+	}
+	closer, err := client.ChainSync(ctx, callback,
+		ogmigo.WithPoints(points...),
+		ogmigo.WithReconnect(true),
+		ogmigo.WithUseV6(useV6),
+	)
+
+	if err != nil {
+		return err
+	}
+	defer closer.Close()
+
 	stop := make(chan os.Signal, 1)
 	signal.Notify(stop, os.Kill, os.Interrupt)
 
