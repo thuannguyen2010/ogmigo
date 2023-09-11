@@ -16,6 +16,7 @@ package chainsync
 
 import (
 	"bytes"
+	"encoding/base64"
 	"encoding/hex"
 	"encoding/json"
 	"fmt"
@@ -416,6 +417,7 @@ type Response struct {
 
 type Tx struct {
 	ID       string          `json:"id,omitempty"       dynamodbav:"id,omitempty"`
+	Cbor     Cbor            `json:"raw,omitempty"`
 	Body     TxBody          `json:"body,omitempty"     dynamodbav:"body,omitempty"`
 	Metadata json.RawMessage `json:"metadata,omitempty" dynamodbav:"metadata,omitempty"`
 	Witness  Witness         `json:"witness,omitempty"  dynamodbav:"witness,omitempty"`
@@ -438,6 +440,22 @@ type TxBody struct {
 }
 
 type TxID string
+
+type Cbor string
+
+func (c *Cbor) UnmarshalJSON(data []byte) error {
+	var s string
+	if err := json.Unmarshal(data, &s); err != nil {
+		return err
+	}
+	decodedCbor, err := base64.StdEncoding.DecodeString(s)
+	if err != nil {
+		return err
+	}
+	hexString := hex.EncodeToString(decodedCbor)
+	*c = Cbor(hexString)
+	return nil
+}
 
 func NewTxID(txHash string, index int) TxID {
 	return TxID(txHash + "#" + strconv.Itoa(index))

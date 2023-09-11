@@ -77,9 +77,9 @@ func action(_ *cli.Context) error {
 	)
 	points = []chainsync.Point{
 		chainsync.PointStruct{
-			BlockNo: 1009189,
-			Hash:    "b95423b8778536cf9a53e8855cef2bd8702f79ffa3c918b8857437cfb238474d",
-			Slot:    23003752,
+			BlockNo: 1120428,
+			Hash:    "c39dc7fcbc3c2ec1df8126c6a0ce0558c92e5f8e22b7e738c33428982cabdfbf",
+			Slot:    25588246,
 		}.Point(),
 	}
 	//useV6 := false

@@ -42,6 +42,7 @@ type Transaction struct {
 	Datums    map[string]HexData `json:"datums,omitempty"`
 	Redeemers json.RawMessage    `json:"redeemers,omitempty"`
 	Fee       Fee                `json:"fee"`
+	Cbor      string             `json:"cbor,omitempty"`
 }
 
 type Fee struct {
@@ -229,7 +230,8 @@ func (responseV6 ResponseV6) ConvertToV5() (response Response) {
 			})
 		}
 		txs = append(txs, Tx{
-			ID: txV6.ID,
+			ID:   txV6.ID,
+			Cbor: Cbor(txV6.Cbor),
 			Body: TxBody{
 				Fee:     txV6.Fee.Lovelace,
 				Inputs:  txIns,
