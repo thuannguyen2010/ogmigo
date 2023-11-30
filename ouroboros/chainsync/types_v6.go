@@ -43,6 +43,7 @@ type Transaction struct {
 	Redeemers json.RawMessage    `json:"redeemers,omitempty"`
 	Fee       Fee                `json:"fee"`
 	Cbor      string             `json:"cbor,omitempty"`
+	Metadata  json.RawMessage    `json:"metadata,omitempty"`
 }
 
 type Fee struct {
@@ -241,6 +242,7 @@ func (responseV6 ResponseV6) ConvertToV5() (response Response) {
 				Datums:    txV6.Datums,
 				Redeemers: txV6.Redeemers,
 			},
+			Metadata: txV6.Metadata,
 		})
 	}
 	block := Block{
