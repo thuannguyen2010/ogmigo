@@ -495,10 +495,11 @@ func (t TxIn) TxID() TxID {
 }
 
 type TxOut struct {
-	Address   string `json:"address,omitempty"   dynamodbav:"address,omitempty"`
-	Datum     string `json:"datum,omitempty"     dynamodbav:"datum,omitempty"`
-	DatumHash string `json:"datumHash,omitempty" dynamodbav:"datumHash,omitempty"`
-	Value     Value  `json:"value,omitempty"     dynamodbav:"value,omitempty"`
+	Address   string          `json:"address,omitempty"   dynamodbav:"address,omitempty"`
+	Datum     string          `json:"datum,omitempty"     dynamodbav:"datum,omitempty"`
+	DatumHash string          `json:"datumHash,omitempty" dynamodbav:"datumHash,omitempty"`
+	Value     Value           `json:"value,omitempty"     dynamodbav:"value,omitempty"`
+	Script    json.RawMessage `json:"script,omitempty"    dynamodbav:"script,omitempty"`
 }
 
 type TxOuts []TxOut

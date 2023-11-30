@@ -60,8 +60,9 @@ type TxInV6 struct {
 type TxOutV6 struct {
 	Address   string `json:"address,omitempty"`
 	Value     map[string]map[string]num.Int
-	Datum     string `json:"datum"`
-	DatumHash string `json:"datumHash"`
+	Datum     string          `json:"datum"`
+	DatumHash string          `json:"datumHash"`
+	Script    json.RawMessage `json:"script,omitempty"`
 }
 
 type PointV6 struct {
@@ -228,6 +229,7 @@ func (responseV6 ResponseV6) ConvertToV5() (response Response) {
 					Coins:  coins,
 					Assets: assets,
 				},
+				Script: txOutV6.Script,
 			})
 		}
 		txs = append(txs, Tx{
