@@ -165,7 +165,7 @@ func (responseV6 ResponseV6) ConvertToV5() (response Response) {
 		Result:      nil,
 	}
 	// intersection not found
-	if responseV6.Result.Error != nil {
+	if responseV6.Result == nil || responseV6.Result.Error != nil {
 		response.Result = &Result{
 			IntersectionNotFound: &IntersectionNotFound{},
 		}
