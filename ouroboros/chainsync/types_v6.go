@@ -44,6 +44,7 @@ type Transaction struct {
 	Fee       Fee                `json:"fee"`
 	Cbor      string             `json:"cbor,omitempty"`
 	Metadata  json.RawMessage    `json:"metadata,omitempty"`
+	Mint      *Value             `json:"mint,omitempty"`
 }
 
 type Fee struct {
@@ -237,6 +238,7 @@ func (responseV6 ResponseV6) ConvertToV5() (response Response) {
 			Cbor: Cbor(txV6.Cbor),
 			Body: TxBody{
 				Fee:     txV6.Fee.Lovelace,
+				Mint:    txV6.Mint,
 				Inputs:  txIns,
 				Outputs: txOuts,
 			},
