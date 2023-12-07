@@ -35,16 +35,16 @@ type BlockV6 struct {
 }
 
 type Transaction struct {
-	ID        string             `json:"id,omitempty"`
-	Spends    string             `json:"spends,omitempty"`
-	TxInputs  []TxInV6           `json:"inputs,omitempty"`
-	TxOutputs []TxOutV6          `json:"outputs,omitempty"`
-	Datums    map[string]HexData `json:"datums,omitempty"`
-	Redeemers json.RawMessage    `json:"redeemers,omitempty"`
-	Fee       Fee                `json:"fee"`
-	Cbor      string             `json:"cbor,omitempty"`
-	Metadata  json.RawMessage    `json:"metadata,omitempty"`
-	Mint      *Value             `json:"mint,omitempty"`
+	ID        string                        `json:"id,omitempty"`
+	Spends    string                        `json:"spends,omitempty"`
+	TxInputs  []TxInV6                      `json:"inputs,omitempty"`
+	TxOutputs []TxOutV6                     `json:"outputs,omitempty"`
+	Datums    map[string]HexData            `json:"datums,omitempty"`
+	Redeemers json.RawMessage               `json:"redeemers,omitempty"`
+	Fee       Fee                           `json:"fee"`
+	Cbor      string                        `json:"cbor,omitempty"`
+	Metadata  json.RawMessage               `json:"metadata,omitempty"`
+	Mint      map[string]map[string]num.Int `json:"mint,omitempty"`
 }
 
 type Fee struct {
@@ -233,12 +233,25 @@ func (responseV6 ResponseV6) ConvertToV5() (response Response) {
 				Script: txOutV6.Script,
 			})
 		}
+		var mint *Value
+		if txV6.Mint != nil {
+			mint = &Value{
+				Assets: make(map[AssetID]num.Int),
+			}
+			for policyID, assetNameMap := range txV6.Mint {
+				for assetName, val := range assetNameMap {
+					assetID := AssetID(fmt.Sprintf("%s.%s", policyID, assetName))
+					mint.Assets[assetID] = val
+				}
+			}
+		}
+
 		txs = append(txs, Tx{
 			ID:   txV6.ID,
 			Cbor: Cbor(txV6.Cbor),
 			Body: TxBody{
 				Fee:     txV6.Fee.Lovelace,
-				Mint:    txV6.Mint,
+				Mint:    mint,
 				Inputs:  txIns,
 				Outputs: txOuts,
 			},
