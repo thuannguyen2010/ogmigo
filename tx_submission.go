@@ -20,10 +20,9 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/buger/jsonparser"
 	"sort"
 	"strings"
-
-	"github.com/buger/jsonparser"
 )
 
 type Response struct {
@@ -121,8 +120,12 @@ func (s SubmitTxError) Messages() []json.RawMessage {
 
 // Error implements the error interface
 func (s SubmitTxError) Error() string {
-	keys, _ := s.ErrorCodes()
-	return fmt.Sprintf("SubmitTx failed: %v", strings.Join(keys, ", "))
+	var msgs []string
+	for _, m := range s.messages {
+		msgs = append(msgs, string(m))
+	}
+
+	return fmt.Sprintf("SubmitTx failed: %v", strings.Join(msgs, ","))
 }
 
 func readSubmitTx(data []byte) error {
