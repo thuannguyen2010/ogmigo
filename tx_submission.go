@@ -59,6 +59,20 @@ func (c *Client) SubmitTx(ctx context.Context, data []byte) (err error) {
 	return readSubmitTx(raw)
 }
 
+// EvaluateTxV6 evaluate the execution units of scripts present in a given transaction, without actually submitting the transaction
+// https://ogmios.dev/mini-protocols/local-tx-submission/#evaluatetx
+func (c *Client) SubmitTxV6(ctx context.Context, cborHex string) (err error) {
+	var (
+		payload = makePayloadV6("submitTransaction", Map{"transaction": Map{"cbor": cborHex}})
+		raw     json.RawMessage
+	)
+	if err := c.query(ctx, payload, &raw); err != nil {
+		return fmt.Errorf("failed to submit tx: %w", err)
+	}
+
+	return readSubmitTxV6(raw)
+}
+
 // SubmitTxError encapsulates the SubmitTx errors and allows the results to be parsed
 type SubmitTxError struct {
 	messages []json.RawMessage
@@ -131,6 +145,24 @@ func readSubmitTx(data []byte) error {
 		}
 		return SubmitTxError{messages: messages}
 
+	case jsonparser.Object:
+		return SubmitTxError{messages: []json.RawMessage{value}}
+
+	default:
+		return fmt.Errorf("SubmitTx failed: %v", string(value))
+	}
+}
+
+func readSubmitTxV6(data []byte) error {
+	value, dataType, _, err := jsonparser.Get(data, "error")
+	if err != nil {
+		if errors.Is(err, jsonparser.KeyPathNotFoundError) {
+			return nil
+		}
+		return fmt.Errorf("failed to parse SubmitTx response: %w", err)
+	}
+
+	switch dataType {
 	case jsonparser.Object:
 		return SubmitTxError{messages: []json.RawMessage{value}}
 
