@@ -19,6 +19,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+
 	"github.com/buger/jsonparser"
 	"github.com/thuannguyen2010/ogmigo/ouroboros/chainsync"
 )
@@ -40,7 +41,7 @@ func (c *Client) EvaluateTx(ctx context.Context, cborHex string) (redeemer chain
 		raw     json.RawMessage
 	)
 	if err := c.query(ctx, payload, &raw); err != nil {
-		return nil, fmt.Errorf("failed to evaluate tx: %w", err)
+		return nil, err
 	}
 
 	return readEvaluateTx(raw)
@@ -80,7 +81,7 @@ func (c *Client) EvaluateTxV6(ctx context.Context, cborHex string) (redeemer cha
 		raw     json.RawMessage
 	)
 	if err := c.query(ctx, payload, &raw); err != nil {
-		return nil, fmt.Errorf("failed to evaluate tx: %w", err)
+		return nil, err
 	}
 
 	return readEvaluateTxV6(raw)
